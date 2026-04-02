@@ -1,0 +1,25 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: ombekket_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ombekket
+      POSTGRES_PASSWORD: ombekket
+      POSTGRES_DB: ombekket_db
+    ports:
+      - "5435:5432"
+    volumes:
+      - ombekket_data:/var/lib/postgresql/data
+    networks:
+      - ombekket_network
+
+networks:
+  ombekket_network:
+    driver: bridge
+    name: ombekket_network
+
+volumes:
+  ombekket_data:
+    driver: local
+    name: ombekket_data

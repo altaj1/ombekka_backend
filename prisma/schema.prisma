@@ -1,0 +1,133 @@
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  admin
+  user
+}
+
+
+
+enum OTPType {
+  email_verification
+  login_verification
+  password_reset
+  two_factor
+}
+
+enum AccountStatus {
+  active
+  inactive
+  suspended
+  pending_verification
+}
+
+
+
+model User {
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email           String        @unique
+  username        String?       @unique
+  firstName       String
+  lastName        String
+  displayName     String?
+  role            UserRole      @default(user)
+  status          AccountStatus @default(pending_verification)
+  password        String
+  emailVerifiedAt DateTime?
+  bio             String?
+  address         String
+  phoneNumber     String
+  isDeleted       Boolean       @default(false)
+  lastLoginAt     DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @default(now()) @updatedAt
+  deletedAt       DateTime?
+  otps            OTP[]
+
+}
+model OTP {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  identifier String
+  code       Int
+  type       OTPType
+  expiresAt  DateTime
+  verified   Boolean  @default(false)
+  attempts   Int      @default(0)
+
+  userId String? @db.Uuid
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([identifier, type, verified])
+  @@index([expiresAt])
+  @@index([userId])
+}
+
+model Eco {
+  id          String   @id // ECO code (e.g., A00)
+  name        String
+  example     String
+  type        String
+  group       String
+  games       Game[]
+
+  @@map("ecos")
+}
+
+model Player {
+  fideId      Int      @id
+  name        String
+  country     String?
+  sex         String?
+  title       String?
+  whiteGames  Game[]   @relation("WhiteGames")
+  blackGames  Game[]   @relation("BlackGames")
+
+  @@map("players")
+}
+
+model Tournament {
+  eventId     Int      @id
+  event       String
+  place       String?
+  federation  String?
+  startDate   DateTime?
+  endDate     DateTime?
+  type        String?
+  games       Game[]
+
+  @@map("tournaments")
+}
+
+model Game {
+  id            String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tournamentId  Int
+  tournament    Tournament  @relation(fields: [tournamentId], references: [eventId])
+  datePlayed    DateTime?
+  round         Float?
+  whiteId       Int
+  white         Player      @relation("WhiteGames", fields: [whiteId], references: [fideId])
+  blackId       Int
+  black         Player      @relation("BlackGames", fields: [blackId], references: [fideId])
+  result        String
+  whiteElo      Float?
+  blackElo      Float?
+  ecoCode       String
+  eco           Eco         @relation(fields: [ecoCode], references: [id])
+  plyCount      Float?
+  termination   String?
+  endgame       String?
+  endgameCount  Float?
+
+  @@map("games")
+}
