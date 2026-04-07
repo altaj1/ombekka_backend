@@ -300,6 +300,7 @@ export class GameController extends BaseController {
       res,
       "Game retrieved successfully",
       HTTPStatusCode.OK,
+
       result,
     );
   };
