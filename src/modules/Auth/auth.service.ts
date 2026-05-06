@@ -31,6 +31,7 @@ import {
   UserRole,
 } from "@/generated/prisma/client";
 import { sendImageToCloudinary } from "@/utils/sendImageToCloudinery";
+import { fa } from "zod/v4/locales";
 
 export interface AuthResponse {
   user: Omit<User, "password">;
@@ -70,15 +71,7 @@ export class AuthService extends BaseService<User> {
     data: RegisterInput,
     avatarFile?: Express.Multer.File,
   ): Promise<{ message: string; requiresVerification: boolean }> {
-    const {
-      email,
-      password,
-      firstName,
-      lastName,
-      username,
-      address,
-      phoneNumber,
-    } = data;
+    const { email, password, firstName, lastName, username } = data;
 
     // ✅ Check existing user
     const existingUser = await this.prisma.user.findFirst({
@@ -106,11 +99,8 @@ export class AuthService extends BaseService<User> {
       );
       console.log({ uploaded });
       imageData = {
-        create: {
-          url: uploaded.secure_url,
-          publicId: uploaded.public_id,
-          type: "user",
-        },
+        url: uploaded.secure_url,
+        publicId: uploaded.public_id,
       };
     }
 
@@ -122,38 +112,40 @@ export class AuthService extends BaseService<User> {
       firstName,
       lastName,
       displayName: `${firstName} ${lastName}`,
-      address,
-      phoneNumber,
 
       // 🔥 Relation here
-      avatar: imageData,
+      avatar: imageData.url,
+      avaterPublicId: imageData.publicId,
     });
-
-    // ✅ Send OTP
-    try {
-      await this.otpService.sendOTP({
-        identifier: email,
-        type: OTPType.email_verification, // 🔥 FIXED (was wrong before)
-        userId: user.id,
-      });
-
-      AppLogger.info("Registration OTP sent", {
-        userId: user.id,
-        email: user.email,
-      });
-    } catch (error) {
-      AppLogger.error("Failed to send registration OTP", {
-        userId: user.id,
-        email: user.email,
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
-
     return {
-      message:
-        "If an account with this email exists, you will receive a verification code.",
-      requiresVerification: true,
+      message: "account created successfully.",
+      requiresVerification: false,
     };
+    // ✅ Send OTP
+    // try {
+    //   await this.otpService.sendOTP({
+    //     identifier: email,
+    //     type: OTPType.email_verification, // 🔥 FIXED (was wrong before)
+    //     userId: user.id,
+    //   });
+
+    //   AppLogger.info("Registration OTP sent", {
+    //     userId: user.id,
+    //     email: user.email,
+    //   });
+    // } catch (error) {
+    //   AppLogger.error("Failed to send registration OTP", {
+    //     userId: user.id,
+    //     email: user.email,
+    //     error: error instanceof Error ? error.message : "Unknown error",
+    //   });
+    // }
+
+    // return {
+    //   message:
+    //     "If an account with this email exists, you will receive a verification code.",
+    //   requiresVerification: true,
+    // };
   }
   /**
    * Verify email with OTP
@@ -237,17 +229,17 @@ export class AuthService extends BaseService<User> {
       throw new AuthenticationError("Invalid email or password");
     }
 
-    if (user.status === AccountStatus.pending_verification) {
-      throw new AuthenticationError("Please verify your email first", {
-        requiresVerification: true,
-      });
-    }
+    // if (user.status === AccountStatus.pending_verification) {
+    //   throw new AuthenticationError("Please verify your email first", {
+    //     requiresVerification: true,
+    //   });
+    // }
 
-    if (user.status !== AccountStatus.active) {
-      throw new AuthenticationError(
-        `Account is ${user.status.replace("_", " ")}`,
-      );
-    }
+    // if (user.status !== AccountStatus.active) {
+    //   throw new AuthenticationError(
+    //     `Account is ${user.status.replace("_", " ")}`,
+    //   );
+    // }
 
     const isValidPassword = await this.verifyPassword(password, user.password);
     if (!isValidPassword) {

@@ -43,8 +43,9 @@ model User {
   password        String
   emailVerifiedAt DateTime?
   bio             String?
-  address         String
-  phoneNumber     String
+
+  avatar          String?
+  avaterPublicId    String?
   isDeleted       Boolean       @default(false)
   lastLoginAt     DateTime?
   createdAt       DateTime      @default(now())

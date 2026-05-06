@@ -47,13 +47,6 @@ export const AuthValidation = {
         .trim()
         .optional(),
       role: roleSchema.optional(),
-      address: z
-        .string()
-        .max(255, "Address must not exceed 255 characters")
-        .trim(),
-      phoneNumber: z
-        .string()
-        .max(15, "Phone number must not exceed 15 characters"),
     })
     .strict()
     .refine((data) => data.password === data.confirmPassword, {
