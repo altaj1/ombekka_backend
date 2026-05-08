@@ -11,41 +11,6 @@ cloudinary.config({
   api_key: config.cloudinary.apiKey,
   api_secret: config.cloudinary.apiSecret,
 });
-console.log("cloudinary config:", {
-  cloud_name: config.cloudinary.cloudName,
-  api_key: config.cloudinary.apiKey,
-  has_secret: !!config.cloudinary.apiSecret,
-});
-// export const sendImageToCloudinary = (
-//   imageName: string,
-//   path: string,
-//   folderName?: string | null,
-// ): Promise<UploadApiResponse> => {
-//   return new Promise((resolve, reject) => {
-//     if (!path) return reject(new Error("File path missing"));
-//     cloudinary.uploader.upload(
-//       path,
-//       {
-//         public_id: imageName,
-//         folder: folderName || config.cloudinary.imageFolderName,
-//         resource_type: "auto",
-//       },
-//       async (error, result) => {
-//         console.error("Cloudinary error:", JSON.stringify(error, null, 2));
-//         if (error) return reject(error);
-
-//         try {
-//           // ✅ upload successful → now delete local file
-//           await fsPromises.unlink(path);
-//         } catch (e) {
-//           console.error("Failed to delete local file:", e);
-//         }
-
-//         resolve(result as UploadApiResponse);
-//       },
-//     );
-//   });
-// };
 
 export const sendImageToCloudinary = (
   imageName: string,
@@ -58,20 +23,21 @@ export const sendImageToCloudinary = (
     cloudinary.uploader.upload(
       filePath,
       {
-        // public_id: imageName,
-        // folder: folderName || config.cloudinary.imageFolderName,
-        resource_type: "raw",
+        public_id: imageName,
+        folder: folderName || config.cloudinary.imageFolderName,
+        resource_type: "auto",
       },
       async (error, result) => {
         if (error) {
           console.error(
-            "Cloudinary full error:",
+            "Cloudinary Upload Error Details:",
             JSON.stringify(error, null, 2),
           );
           return reject(error);
         }
 
         try {
+          // Remove file from local storage after successful upload
           await fsPromises.unlink(filePath);
         } catch (e) {
           console.error("Failed to delete local file:", e);
@@ -90,13 +56,10 @@ export const sendImagesToCloudinary = async (
   try {
     const uploadPromises = images.map((image) => {
       return new Promise<string>((resolve, reject) => {
-        // const resourceType = image.mimetype.startsWith("image/")
-        //   ? "image"
-        //   : "video";
         const resourceType = image.mimetype.startsWith("image/")
           ? "image"
           : image.mimetype === "application/pdf"
-            ? "raw"
+            ? "auto"
             : "video";
 
         cloudinary.uploader.upload(
@@ -148,18 +111,6 @@ export const deleteImageFromCloudinary = (
   });
 };
 
-// const isProd = process.env.NODE_ENV === "production";
-// const storage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     const uploadPath = isProd ? "/tmp" : process.cwd() + "/uploads";
-//     cb(null, uploadPath);
-//   },
-//   filename: function (req, file, cb) {
-//     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-//     const filename = file.fieldname + "-" + uniqueSuffix;
-//     cb(null, filename);
-//   },
-// });
 const uploadDir = path.join(process.cwd(), "uploads");
 
 if (!fs.existsSync(uploadDir)) {
@@ -175,6 +126,7 @@ const storage = multer.diskStorage({
     cb(null, file.fieldname + "-" + uniqueSuffix);
   },
 });
+
 export const upload = multer({
   storage: storage,
   fileFilter: (req, file, cb) => {

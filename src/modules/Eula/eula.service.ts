@@ -1,7 +1,7 @@
 // src/modules/Eula/eula.service.ts
 import { BaseService } from "@/core/BaseService";
 import { PrismaClient, Eula } from "@/generated/prisma/client";
-import cloudinary, {
+import {
   sendImageToCloudinary,
   deleteImageFromCloudinary,
 } from "@/utils/sendImageToCloudinery";
@@ -56,12 +56,6 @@ export class EulaService extends BaseService<Eula> {
     // 3. Upload new PDF to Cloudinary
     const folderName = "eula_documents";
     const fileName = `eula_${Date.now()}`;
-    console.log("cloudinary config", cloudinary.config());
-    console.log("file", {
-      mimetype: file.mimetype,
-      path: file.path,
-      name: file.originalname,
-    });
 
     const uploaded = await sendImageToCloudinary(
       fileName,
