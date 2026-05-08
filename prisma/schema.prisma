@@ -132,3 +132,14 @@ model Game {
 
   @@map("games")
 }
+
+model Eula {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  fileUrl   String
+  publicId  String
+  fileName  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("eulas")
+}

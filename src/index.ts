@@ -4,6 +4,7 @@ import { AppLogger } from "./core/logging/logger";
 import { config } from "./core/config";
 import { AuthModule } from "./modules/Auth/AuthModule";
 import { GameModule } from "./modules/Game/GameModule";
+import { EulaModule } from "./modules/Eula/EulaModule";
 // Main application bootstrap function
 async function bootstrap() {
   try {
@@ -17,6 +18,7 @@ async function bootstrap() {
     // Register application modules
     app.registerModule(new AuthModule());
     app.registerModule(new GameModule());
+    app.registerModule(new EulaModule());
     AppLogger.info("✔ All modules registered successfully");
 
     // Start the server

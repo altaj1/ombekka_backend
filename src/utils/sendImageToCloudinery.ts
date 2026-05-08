@@ -11,26 +11,68 @@ cloudinary.config({
   api_key: config.cloudinary.apiKey,
   api_secret: config.cloudinary.apiSecret,
 });
+console.log("cloudinary config:", {
+  cloud_name: config.cloudinary.cloudName,
+  api_key: config.cloudinary.apiKey,
+  has_secret: !!config.cloudinary.apiSecret,
+});
+// export const sendImageToCloudinary = (
+//   imageName: string,
+//   path: string,
+//   folderName?: string | null,
+// ): Promise<UploadApiResponse> => {
+//   return new Promise((resolve, reject) => {
+//     if (!path) return reject(new Error("File path missing"));
+//     cloudinary.uploader.upload(
+//       path,
+//       {
+//         public_id: imageName,
+//         folder: folderName || config.cloudinary.imageFolderName,
+//         resource_type: "auto",
+//       },
+//       async (error, result) => {
+//         console.error("Cloudinary error:", JSON.stringify(error, null, 2));
+//         if (error) return reject(error);
+
+//         try {
+//           // ✅ upload successful → now delete local file
+//           await fsPromises.unlink(path);
+//         } catch (e) {
+//           console.error("Failed to delete local file:", e);
+//         }
+
+//         resolve(result as UploadApiResponse);
+//       },
+//     );
+//   });
+// };
 
 export const sendImageToCloudinary = (
   imageName: string,
-  path: string,
+  filePath: string,
   folderName?: string | null,
 ): Promise<UploadApiResponse> => {
   return new Promise((resolve, reject) => {
-    if (!path) return reject(new Error("File path missing"));
+    if (!filePath) return reject(new Error("File path missing"));
+
     cloudinary.uploader.upload(
-      path,
+      filePath,
       {
-        public_id: imageName,
-        folder: folderName || config.cloudinary.imageFolderName,
+        // public_id: imageName,
+        // folder: folderName || config.cloudinary.imageFolderName,
+        resource_type: "raw",
       },
       async (error, result) => {
-        if (error) return reject(error);
+        if (error) {
+          console.error(
+            "Cloudinary full error:",
+            JSON.stringify(error, null, 2),
+          );
+          return reject(error);
+        }
 
         try {
-          // ✅ upload successful → now delete local file
-          await fsPromises.unlink(path);
+          await fsPromises.unlink(filePath);
         } catch (e) {
           console.error("Failed to delete local file:", e);
         }
@@ -40,6 +82,7 @@ export const sendImageToCloudinary = (
     );
   });
 };
+
 export const sendImagesToCloudinary = async (
   images: Express.Multer.File[], // Expecting multiple files
   folderName: string | undefined | null,
@@ -47,9 +90,15 @@ export const sendImagesToCloudinary = async (
   try {
     const uploadPromises = images.map((image) => {
       return new Promise<string>((resolve, reject) => {
+        // const resourceType = image.mimetype.startsWith("image/")
+        //   ? "image"
+        //   : "video";
         const resourceType = image.mimetype.startsWith("image/")
           ? "image"
-          : "video";
+          : image.mimetype === "application/pdf"
+            ? "raw"
+            : "video";
+
         cloudinary.uploader.upload(
           image.path,
           {
@@ -135,11 +184,16 @@ export const upload = multer({
       "image/png",
       "image/gif",
       "image/webp",
+      "application/pdf",
     ];
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error("Invalid file type. Only images and videos are allowed."));
+      cb(
+        new Error(
+          "Invalid file type. Only images, videos and PDFs are allowed.",
+        ),
+      );
     }
   },
 });

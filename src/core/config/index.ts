@@ -96,11 +96,10 @@ export const config = {
     cloudFrontPublicDomain: process.env.AWS_CLOUDFRONT_DOMAIN_PUBLIC || "",
   },
   cloudinary: {
-    apiKey: process.env.CLOUDINARY_API_KAY || "",
+    apiKey: process.env.CLOUDINARY_API_KEY || "",
     apiSecret: process.env.CLOUDINARY_API_SECRET || "",
     cloudName: process.env.CLOUDINARY_NAME || "",
-    imageFolderName:
-      process.env.CLOUDINARY_IMAGE_FOLDER_NAME || "ev_store_images",
+    imageFolderName: process.env.CLOUDINARY_IMAGE_FOLDER_NAME || "Ombekka",
   },
 };
 
