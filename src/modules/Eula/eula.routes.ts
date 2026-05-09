@@ -37,7 +37,7 @@ export class EulaRoutes {
       "/",
       // authenticate,
       // authorize("admin"),
-      upload.single("eula"),
+      // upload.single("eula"),
       asyncHandler((req: Request, res: Response) =>
         this.eulaController.uploadEula(req, res),
       ),

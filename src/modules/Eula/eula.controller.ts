@@ -16,13 +16,14 @@ export class EulaController extends BaseController {
    */
   public uploadEula = async (req: Request, res: Response) => {
     this.logAction("uploadEula", req);
-    
-    const file = req.file;
-    if (!file) {
-      throw new BadRequestError("Please upload a PDF file");
-    }
 
-    const result = await this.eulaService.uploadEula(file);
+    // const file = req.file;
+    // if (!file) {
+    //   throw new BadRequestError("Please upload a PDF file");
+    // }
+
+    // const result = await this.eulaService.uploadEula(file);
+    const result = await this.eulaService.uploadEula(req.body);
 
     return this.sendResponse(
       res,
@@ -39,7 +40,7 @@ export class EulaController extends BaseController {
   public getEula = async (req: Request, res: Response) => {
     this.logAction("getEula", req);
 
-    const result = await this.eulaService.getLatestEula();
+    const result = await this.eulaService.findMany();
 
     return this.sendResponse(
       res,

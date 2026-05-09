@@ -105,7 +105,17 @@ export const deleteImageFromCloudinary = (
     }
 
     cloudinary.uploader.destroy(publicId, (error, result) => {
-      if (error) return reject(error);
+      if (error) {
+        console.error(
+          "Cloudinary delete Error Details:",
+          JSON.stringify(error, null, 2),
+        );
+        return reject(error);
+      }
+      console.log(
+        "Cloudinary delete result Details:",
+        JSON.stringify(result, null, 2),
+      );
       resolve(result);
     });
   });

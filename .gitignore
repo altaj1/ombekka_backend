@@ -9,7 +9,7 @@ dist
 # code coverage
 coverage
 *.lcov
-
+logs/
 # logs
 logs
 _.log
